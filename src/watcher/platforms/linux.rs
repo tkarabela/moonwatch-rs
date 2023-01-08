@@ -3,12 +3,34 @@ use std::time::Duration;
 use std::fs;
 use std::path::{Path, PathBuf};
 use crate::watcher::core::{Window, Desktop};
-use anyhow::Result;
+use anyhow::{bail, Result};
 
-pub struct LinuxDesktop;
+pub struct GnomeDesktop;
 pub struct LinuxXWindow { window_id: u64 }
 
-impl Desktop for LinuxDesktop {
+impl Desktop for GnomeDesktop {
+    fn implementation_name(&self) -> &'static str {
+        "GnomeDesktop"
+    }
+
+    fn check_implementation_available(&self) -> Result<()> {
+        let commands_to_test = ["gnome-screensaver-command", "xprintidle", "xdotool"];
+
+        for cmd in commands_to_test {
+            let output = Command::new(cmd)
+                .arg("-h")
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .output();
+
+            if let Err(e) = output {
+                bail!("Program {cmd:?} not available: {e}")
+            }
+        }
+
+        Ok(())
+    }
+
     fn is_screen_locked(&self) -> bool {
         let output = Command::new("gnome-screensaver-command")
             .arg("-q")

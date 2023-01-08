@@ -1,14 +1,20 @@
 # Moonwatch.rs
 
-## Usage
+## The `moonwatcher` daemon
 
-### `moonwatcher` – running the binary
+Supported platforms:
+
+- Linux (and other unix-like systems), GNOME, X11
+  - dependencies: `gnome-screensaver-command`, `xprintidle`, `xdotool`
+  - tested on Ubuntu 22.04 LTS
+
+### CLI
 
 ```sh
 moonwatcher config.json
 ```
 
-### `moonwatcher` – JSON configuration
+### JSON configuration
 
 The overall structure is as follows:
 

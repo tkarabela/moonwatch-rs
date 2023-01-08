@@ -13,6 +13,8 @@ pub trait Window {
 }
 
 pub trait Desktop {
+    fn implementation_name(&self) -> &'static str;
+    fn check_implementation_available(&self) -> Result<()>;
     fn is_screen_locked(&self) -> bool;
     fn get_idle_duration(&self) -> Duration;
     fn get_active_window(&self) -> Result<Box<dyn Window>>;

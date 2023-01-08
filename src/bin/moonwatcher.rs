@@ -119,7 +119,9 @@ fn main() -> anyhow::Result<()> {
     let mut config = Config::from_file(config_path.as_path())?;
     println!("Read configuration: {:?}", config);
 
-    let desktop = watcher::get_desktop();
+    let desktop = watcher::get_desktop(&config)?;
+    println!("Using desktop implementation: {}", desktop.implementation_name());
+
     let mut writer = MoonwatcherWriter::new();
 
     let signal_chan = signal_channel()?;
