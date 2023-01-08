@@ -1,6 +1,6 @@
 {
   "main": {
-    "output_dir": ".",
+    "output_dir": "./log",
     "sample_every_sec": 15,
     "write_every_sec": 21600
   },

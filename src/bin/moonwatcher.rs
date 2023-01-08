@@ -1,5 +1,5 @@
 use std::process::{Command, Stdio};
-use std::{io, thread, time};
+use std::{fs, io, thread, time};
 use std::collections::LinkedList;
 use std::fs::File;
 use std::io::Write;
@@ -80,6 +80,12 @@ impl MoonwatcherWriter {
     pub fn write(&mut self, config: &Config) -> Result<()> {
         if self.events_to_write.is_empty() {
             return Ok(());
+        }
+
+        // ensure output dir
+        if !config.output_dir.exists() {
+            println!("Creating output dir {:?}", config.output_dir);
+            fs::create_dir_all(&config.output_dir)?;
         }
 
         // derive name for output file

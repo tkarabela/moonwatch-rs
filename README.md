@@ -2,6 +2,19 @@
 
 ## The `moonwatcher` daemon
 
+### Installation
+
+Tested on Ubuntu 22.04 LTS.
+
+- Clone the repository.
+- `./build.py && ./build/install_unix.py`
+- This will install into `~/.moonwatcher-rs`.
+  - It sets up a Systemd user service `moonwatcher-rs` that starts `moonwatcher` on startup.
+  - Events are written to `~/.moonwatcher-rs/logs`
+  - To customize, edit `~/.moonwatcher-rs/config.json`
+  - To check up on the daemon, run `systemctl --user status moonwatch-rs`
+  - To reload config, run `systemctl --user reload moonwatch-rs`
+
 Supported platforms:
 
 - Linux (and other unix-like systems), GNOME, X11
@@ -81,4 +94,3 @@ Full configuration example:
   }
 }
 ```
-
