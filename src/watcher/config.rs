@@ -21,20 +21,20 @@ pub struct ConfigTag {
 impl WindowEventMatcher {
     pub fn matches(&self, e: &ActiveWindowEvent) -> bool {
         if let Some(tmp) = &self.window_title_regex {
-            if tmp.is_match(e.window_title.as_str()) {
-                return true;
+            if !tmp.is_match(e.window_title.as_str()) {
+                return false;
             }
         }
 
         if let Some(tmp) = &self.process_path_regex {
             if let Some(path) = e.process_path.to_str() {
-                if tmp.is_match(path) {
-                    return true;
+                if !tmp.is_match(path) {
+                    return false;
                 }
             }
         }
 
-        false
+        true
     }
 
     pub fn from_json_single(val: &JsonValue) -> Result<WindowEventMatcher> {
