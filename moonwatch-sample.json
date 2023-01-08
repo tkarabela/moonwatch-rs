@@ -13,11 +13,11 @@
   "tags": {
     "youtube": [{
         "window_title": "YouTube — Mozilla Firefox$",
-        "process_name": "firefox(\\.exe)?$"
+        "process_path": "firefox(\\.exe)?$"
       },
       {
         "window_title": "YouTube — Mozilla Firefox$",
-        "process_name": "chrome(\\.exe)?$"
+        "process_path": "chrome(\\.exe)?$"
       }
     ],
     "pycharm": {

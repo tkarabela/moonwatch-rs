@@ -109,7 +109,11 @@ impl MoonwatcherWriter {
 }
 
 fn main() -> anyhow::Result<()> {
-    let config_path = PathBuf::from(std::env::args().nth(1).unwrap_or("moonwatch.json".to_string()));
+    if std::env::args().len() != 2 {
+        bail!("Usage: moonwatcher config.json");
+    }
+
+    let config_path = PathBuf::from(std::env::args().nth(1).unwrap());
     println!("--- Moonwatch ---");
     println!("Configuration file: {:?}", config_path);
     let mut config = Config::from_file(config_path.as_path())?;
