@@ -37,7 +37,7 @@ impl WindowEventMatcher {
         false
     }
 
-    pub fn from_json(val: &JsonValue) -> Result<WindowEventMatcher> {
+    pub fn from_json_single(val: &JsonValue) -> Result<WindowEventMatcher> {
         if !val.is_object() {
             bail!("WindowEventMatcher definition should be an object, not {:?}", val);
         }
@@ -53,10 +53,32 @@ impl WindowEventMatcher {
             Some(Regex::new(tmp)?)
         } else { None };
 
+        if (![&window_title_regex, &process_path_regex].iter().any(|tmp| tmp.is_some())) {
+            bail!("WindowEventMatcher must define at least one of window_title, process_path");
+        }
+
         Ok(WindowEventMatcher {
             window_title_regex: window_title_regex,
             process_path_regex: process_path_regex,
         })
+    }
+
+    pub fn from_json(val: &JsonValue) -> Result<Vec<WindowEventMatcher>> {
+        if val.is_array() {
+            let mut matchers = Vec::<WindowEventMatcher>::new();
+
+            for v in val.members() {
+                matchers.push(WindowEventMatcher::from_json_single(v)?);
+            }
+
+            Ok(matchers)
+        } else if val.is_object() {
+            Ok(vec![WindowEventMatcher::from_json_single(val)?])
+        } else if val.is_null() {
+            Ok(vec![])
+        } else {
+            bail!("WindowEventMatcher(s) JSON definition must be object, array, or null")
+        }
     }
 }
 
@@ -78,20 +100,9 @@ impl Config {
         let mut tags = Vec::<ConfigTag>::new();
 
         for (key, val) in d["tags"].entries() {
-            let mut tag_definitions = Vec::<&JsonValue>::new();
-            if val.is_array() {
-                for tmp in val.members() {
-                    tag_definitions.push(tmp);
-                }
-            } else if val.is_object() {
-                tag_definitions.push(val);
-            } else {
-                anyhow!("cannot read definition of tag {}", key);
-            }
+            let matchers = WindowEventMatcher::from_json(val)?;
 
-            for tag_definition in tag_definitions {
-                let matcher = WindowEventMatcher::from_json(tag_definition)?;
-
+            for matcher in matchers {
                 tags.push( ConfigTag {
                     tag: key.to_string(),
                     matcher
@@ -99,17 +110,11 @@ impl Config {
             }
         }
 
-        let mut ignore = Vec::<WindowEventMatcher>::new();
-        for val in d["ignore"].members() {
-            ignore.push(WindowEventMatcher::from_json(val)?);
-        }
+        let ignore = WindowEventMatcher::from_json(&d["ignore"])?;
+        let anonymize = WindowEventMatcher::from_json(&d["anonymize"])?;
 
-        let mut anonymize = Vec::<WindowEventMatcher>::new();
-        for val in d["anonymize"].members() {
-            anonymize.push(WindowEventMatcher::from_json(val)?);
-        }
-
-        let output_dir = PathBuf::from(d["main"]["output_dir"].as_str().ok_or(anyhow!("cannot read output_dir"))?);
+        let relative_output_dir = PathBuf::from(d["main"]["output_dir"].as_str().ok_or(anyhow!("cannot read output_dir"))?);
+        let output_dir = path.parent().unwrap().join(relative_output_dir);
         let sample_every = Duration::from_secs_f32(d["main"]["sample_every_sec"].as_f32().ok_or(anyhow!("cannot read sample_every_sec"))?);
         let write_every = Duration::from_secs_f32(d["main"]["write_every_sec"].as_f32().ok_or(anyhow!("cannot read write_every_sec"))?);
 

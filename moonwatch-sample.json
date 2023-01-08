@@ -2,7 +2,7 @@
   "main": {
     "output_dir": ".",
     "sample_every_sec": 15,
-    "write_every_sec": 3000
+    "write_every_sec": 21600
   },
   "ignore": [{
     "window_title": "title to ignore"

@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 use chrono::{DateTime, Utc};
 use json;
-use json::JsonValue;
+use json::{JsonValue, Null};
 use anyhow::Result;
 
 pub trait Window {
@@ -21,39 +21,59 @@ pub trait Desktop {
 #[derive(Debug)]
 pub struct ActiveWindowEvent {
     pub time: DateTime::<Utc>,
+    pub duration: Duration,
     pub hostname: String,
     pub username: String,
     pub idle_for: Duration,
     pub window_title: String,
     pub process_path: PathBuf,
-    pub tags: LinkedList<String>
+    pub tags: LinkedList<String>,
+    pub anonymize: bool,
 }
 
 impl ActiveWindowEvent {
     pub fn new(idle_for: Duration,
                window_title: String,
-               process_path:  PathBuf) -> ActiveWindowEvent {
+               process_path: PathBuf,
+               duration: Duration) -> ActiveWindowEvent {
         ActiveWindowEvent {
             time: Utc::now(),
+            duration,
             hostname: whoami::hostname(),
             username: whoami::username(),
             idle_for,
             window_title,
             process_path,
             tags: LinkedList::new(),
+            anonymize: false,
         }
     }
 
     pub fn to_json(&self) -> json::JsonValue {
         let tags: Vec<String> = self.tags.iter().map(|x| String::from(x)).collect();
 
-        json::object! {
-            "type": "WindowEvent",
-            "time": self.time.to_rfc3339(),
-            "hostname": self.hostname.as_str(),
-            "username": self.username.as_str(),
-            "idle_for": self.idle_for.as_secs_f32(),
-            "tags": tags,
+        if self.anonymize {
+            json::object! {
+                "type": "ActiveWindowEvent",
+                "time": self.time.to_rfc3339(),
+                "duration": self.duration.as_secs_f32().round(),
+                "hostname": self.hostname.as_str(),
+                "username": self.username.as_str(),
+                "idle_for": self.idle_for.as_secs_f32().round(),
+                "process_path": Null,
+                "tags": tags,
+            }
+        } else {
+            json::object! {
+                "type": "ActiveWindowEvent",
+                "time": self.time.to_rfc3339(),
+                "duration": self.duration.as_secs_f32().round(),
+                "hostname": self.hostname.as_str(),
+                "username": self.username.as_str(),
+                "idle_for": self.idle_for.as_secs_f32().round(),
+                "process_path": self.process_path.to_str().unwrap_or(""),
+                "tags": tags,
+            }
         }
     }
 }
