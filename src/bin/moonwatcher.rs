@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use std::process::{Command, Stdio};
 use std::{fs, io, thread, time};
 use std::collections::LinkedList;
