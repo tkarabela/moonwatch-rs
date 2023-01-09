@@ -1,9 +1,10 @@
 use std::time::Duration;
-use std::fs;
+use std::{fs, thread};
 use std::mem::size_of;
 use std::path::{Path, PathBuf};
-use crate::watcher::core::{Window, Desktop};
+use crate::watcher::core::{Window, Desktop, MoonwatcherSignal};
 use anyhow::{anyhow, bail, Result};
+use ctrlc;
 use windows::core::PWSTR;
 use windows::Win32::Foundation::HWND;
 use windows::Win32::System::StationsAndDesktops::{GetThreadDesktop, SwitchDesktop};
@@ -105,4 +106,15 @@ impl Window for WindowsWindow {
             }
         }
     }
+}
+
+pub fn get_signal_channel() -> Result<crossbeam_channel::Receiver<MoonwatcherSignal>> {
+    let (sender, receiver) = crossbeam_channel::bounded(100);
+
+    ctrlc::set_handler(move || {
+        println!("Received OS signal Ctrl-C");
+        sender.send(MoonwatcherSignal::Terminate).expect("failed to send signal over crossbeam_channel");
+    })?;
+
+    Ok(receiver)
 }

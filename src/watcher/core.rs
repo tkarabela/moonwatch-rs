@@ -81,3 +81,9 @@ impl ActiveWindowEvent {
         }
     }
 }
+
+#[derive(Debug)]
+pub enum MoonwatcherSignal {
+    ReloadConfig,
+    Terminate
+}

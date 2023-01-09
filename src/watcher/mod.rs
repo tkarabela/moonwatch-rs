@@ -25,3 +25,17 @@ pub fn get_desktop(config: &Config) -> Result<Box<dyn core::Desktop>> {
 
     get_desktop_impl(config)
 }
+
+pub fn get_signal_channel() -> Result<crossbeam_channel::Receiver<core::MoonwatcherSignal>> {
+    #[cfg(unix)]
+    fn get_signal_channel_impl() -> Result<crossbeam_channel::Receiver<core::MoonwatcherSignal>> {
+        platforms::linux::get_signal_channel()
+    }
+
+    #[cfg(windows)]
+    fn get_signal_channel_impl() -> Result<crossbeam_channel::Receiver<core::MoonwatcherSignal>> {
+        platforms::windows::get_signal_channel()
+    }
+
+    get_signal_channel_impl()
+}

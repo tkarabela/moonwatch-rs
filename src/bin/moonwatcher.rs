@@ -8,14 +8,13 @@ use std::time::Duration;
 use anyhow::bail;
 use chrono::{DateTime, Utc};
 use moonwatch_rs::watcher;
-use moonwatch_rs::watcher::core::{ActiveWindowEvent, Desktop};
+use moonwatch_rs::watcher::core::{ActiveWindowEvent, Desktop, MoonwatcherSignal};
 use regex::Regex;
 use moonwatch_rs::watcher::config::Config;
 use anyhow::Result;
 use sha1::{Sha1, Digest};
-use signal_hook::consts::{SIGHUP, TERM_SIGNALS};
-use signal_hook::iterator::Signals;
 
+#[derive(Debug)]
 enum ActiveWindowEventResult {
     DesktopLocked,
     Window { e: ActiveWindowEvent }
@@ -28,38 +27,11 @@ fn get_window_event(desktop: &dyn Desktop, duration: Duration) -> Result<ActiveW
         let window = desktop.get_active_window()?;
         let idle_duration = desktop.get_idle_duration();
         let process_path = window.get_process_path()?;
-        let window_title = window.get_title()?;
+        let window_title = window.get_title().unwrap_or_default();
 
         let e = ActiveWindowEvent::new(idle_duration, window_title, process_path, duration);
         Ok(ActiveWindowEventResult::Window { e })
     }
-}
-
-#[derive(Debug)]
-enum MoonwatcherSignal {
-    ReloadConfig,
-    Terminate
-}
-
-fn signal_channel() -> Result<crossbeam_channel::Receiver<MoonwatcherSignal>> {
-    let (sender, receiver) = crossbeam_channel::bounded(100);
-
-    let mut sigs = vec![SIGHUP];
-    sigs.extend(TERM_SIGNALS);
-    let mut signals = Signals::new(sigs)?;
-
-    thread::spawn(move || {
-        for sig in signals.forever() {
-            println!("Received OS signal {:?}", sig);
-            let moonwatcher_sig = match sig {
-                SIGHUP => MoonwatcherSignal::ReloadConfig,
-                _ => MoonwatcherSignal::Terminate
-            };
-            sender.send(moonwatcher_sig);
-        }
-    });
-
-    Ok(receiver)
 }
 
 struct MoonwatcherWriter {
@@ -125,12 +97,12 @@ fn main() -> anyhow::Result<()> {
     let mut config = Config::from_file(config_path.as_path())?;
     println!("Read configuration: {:?}", config);
 
-    let desktop = watcher::get_desktop(&config)?;
+    let mut desktop = watcher::get_desktop(&config)?;
     println!("Using desktop implementation: {}", desktop.implementation_name());
 
     let mut writer = MoonwatcherWriter::new();
 
-    let signal_chan = signal_channel()?;
+    let signal_chan = watcher::get_signal_channel()?;
     let mut writer_tick_chan = crossbeam_channel::tick(config.write_every);
     let mut sample_tick_slow = false;
     let mut sample_tick_chan = crossbeam_channel::tick(config.sample_every);

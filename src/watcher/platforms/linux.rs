@@ -1,9 +1,11 @@
 use std::process::{Command, Stdio};
 use std::time::Duration;
-use std::fs;
+use std::{fs, thread};
 use std::path::{Path, PathBuf};
-use crate::watcher::core::{Window, Desktop};
+use crate::watcher::core::{Window, Desktop, MoonwatcherSignal};
 use anyhow::{bail, Result};
+use signal_hook::consts::{SIGHUP, TERM_SIGNALS};
+use signal_hook::iterator::Signals;
 
 pub struct GnomeDesktop;
 pub struct LinuxXWindow { window_id: u64 }
@@ -103,4 +105,25 @@ impl Window for LinuxXWindow {
         let pid = self.get_process_id()?;
         Ok(fs::read_link(format!("/proc/{}/exe", pid))?)
     }
+}
+
+pub fn get_signal_channel() -> Result<crossbeam_channel::Receiver<MoonwatcherSignal>> {
+    let (sender, receiver) = crossbeam_channel::bounded(100);
+
+    let mut sigs = vec![SIGHUP];
+    sigs.extend(TERM_SIGNALS);
+    let mut signals = Signals::new(sigs)?;
+
+    thread::spawn(move || {
+        for sig in signals.forever() {
+            println!("Received OS signal {:?}", sig);
+            let moonwatcher_sig = match sig {
+                SIGHUP => MoonwatcherSignal::ReloadConfig,
+                _ => MoonwatcherSignal::Terminate
+            };
+            sender.send(moonwatcher_sig).expect("failed to send signal over crossbeam_channel");
+        }
+    });
+
+    Ok(receiver)
 }
