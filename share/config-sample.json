@@ -5,7 +5,7 @@
     "write_every_sec": 21600
   },
   "ignore": [{
-    "window_title": "title to ignore"
+    "process_path": "Microsoft\\.LockApp|Windows\\\\explorer.exe"
   }],
   "anonymize": [{
     "window_title": "title to anonymize"
