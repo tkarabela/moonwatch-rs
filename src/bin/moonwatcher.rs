@@ -119,10 +119,20 @@ fn main() -> anyhow::Result<()> {
                         match Config::from_file(config_path.as_path()) {
                             Ok(new_config) => {
                                 println!("Read configuration: {:?}", new_config);
-                                config = new_config;
-                                sample_tick_slow = false;
-                                sample_tick_chan = crossbeam_channel::tick(config.sample_every);
-                                writer_tick_chan = crossbeam_channel::tick(config.write_every);
+
+                                // in the future, Desktop may depend on Config, so reload it as well
+                                match watcher::get_desktop(&new_config) {
+                                    Ok(new_desktop) => {
+                                        config = new_config;
+                                        desktop = new_desktop;
+                                        sample_tick_slow = false;
+                                        sample_tick_chan = crossbeam_channel::tick(config.sample_every);
+                                        writer_tick_chan = crossbeam_channel::tick(config.write_every);
+                                    }
+                                    Err(e) => {
+                                        println!("Failed to get desktop implementation, rolling back config update: {:?}", e);
+                                    }
+                                }
                             }
                             Err(e) => {
                                 println!("Failed to reload configuration: {:?}", e);
