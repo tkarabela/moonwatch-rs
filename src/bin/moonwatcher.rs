@@ -4,13 +4,13 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 use std::time::Duration;
-use anyhow::bail;
 use chrono;
 use moonwatch_rs::watcher;
 use moonwatch_rs::watcher::core::{ActiveWindowEvent, Desktop, MoonwatcherSignal};
 use moonwatch_rs::watcher::config::Config;
 use anyhow::Result;
 use sha1::{Sha1, Digest};
+use clap::Parser;
 
 #[derive(Debug)]
 enum ActiveWindowEventResult {
@@ -84,12 +84,18 @@ impl MoonwatcherWriter {
     }
 }
 
-fn main() -> anyhow::Result<()> {
-    if std::env::args().len() != 2 {
-        bail!("Usage: moonwatcher config.json");
-    }
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+/// The Moonwatch.rs daemon
+struct MoonwatcherCli {
+    #[arg(value_name = "CONFIG.JSON", help = "path to config.json file")]
+    config_path: PathBuf,
+}
 
-    let config_path = PathBuf::from(std::env::args().nth(1).unwrap());
+fn main() -> Result<()> {
+    let cli = MoonwatcherCli::parse();
+    let config_path = cli.config_path;
+
     println!("--- Moonwatch ---");
     println!("Configuration file: {:?}", config_path);
     let mut config = Config::from_file(config_path.as_path())?;
