@@ -1,8 +1,9 @@
 {
   "main": {
-    "output_dir": "./log",
+    "output_dir": "log",
     "sample_every_sec": 15,
-    "write_every_sec": 21600
+    "write_every_sec": 21600,
+    "path_to_base_config": null
   },
   "ignore": [],
   "anonymize": [{
@@ -11,11 +12,11 @@
   "tags": {
     "youtube": [{
         "window_title": "YouTube — Mozilla Firefox$",
-        "process_path": "firefox(\\.exe)?$"
+        "process_path": "firefox$"
       },
       {
         "window_title": "YouTube — Mozilla Firefox$",
-        "process_path": "chrome(\\.exe)?$"
+        "process_path": "chrome$"
       }
     ],
     "pycharm": {

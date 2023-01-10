@@ -92,26 +92,37 @@ pub struct Config {
     pub anonymize: Vec<WindowEventMatcher>,
 }
 
+#[derive(Debug)]
+pub struct BaseConfig {
+    pub tags: Vec<ConfigTag>,
+    pub ignore: Vec<WindowEventMatcher>,
+    pub anonymize: Vec<WindowEventMatcher>,
+}
+
 impl Config {
     pub fn from_file(path: &Path) -> Result<Config> {
         let data = fs::read_to_string(path)?;
         let d = json::parse(data.as_str())?;
 
-        let mut tags = Vec::<ConfigTag>::new();
+        let mut tags = Config::read_tags(&d["tags"])?;
+        let mut ignore = WindowEventMatcher::from_json(&d["ignore"])?;
+        let mut anonymize = WindowEventMatcher::from_json(&d["anonymize"])?;
 
-        for (key, val) in d["tags"].entries() {
-            let matchers = WindowEventMatcher::from_json(val)?;
-
-            for matcher in matchers {
-                tags.push( ConfigTag {
-                    tag: key.to_string(),
-                    matcher
-                });
+        // import tags, ignore, anonymize from base config
+        if let Some(path_to_base_config_str) = d["main"]["path_to_base_config"].as_str() {
+            let relative_path_to_base_config = PathBuf::from(path_to_base_config_str);
+            let path_to_base_config = path.parent().unwrap().join(relative_path_to_base_config);
+            match BaseConfig::from_file(path_to_base_config.as_path()) {
+                Ok(base_config) => {
+                    tags.extend(base_config.tags);
+                    ignore.extend(base_config.ignore);
+                    anonymize.extend(base_config.anonymize);
+                }
+                Err(e) => {
+                    eprintln!("failed to read base_config {:?}: {:?}", path_to_base_config, e);
+                }
             }
         }
-
-        let ignore = WindowEventMatcher::from_json(&d["ignore"])?;
-        let anonymize = WindowEventMatcher::from_json(&d["anonymize"])?;
 
         let relative_output_dir = PathBuf::from(d["main"]["output_dir"].as_str().ok_or(anyhow!("cannot read output_dir"))?);
         let output_dir = path.parent().unwrap().join(relative_output_dir);
@@ -126,5 +137,43 @@ impl Config {
             ignore,
             anonymize,
         })
+    }
+
+    pub fn read_tags(obj: &JsonValue) -> Result<Vec<ConfigTag>> {
+        if obj.is_null() {
+            return Ok(vec![]);
+        }
+
+        if !obj.is_object() {
+            bail!("JSON value of 'tags' key must be JSON object or null");
+        }
+
+        let mut tags = Vec::<ConfigTag>::new();
+
+        for (key, val) in obj.entries() {
+            let matchers = WindowEventMatcher::from_json(val)?;
+
+            for matcher in matchers {
+                tags.push( ConfigTag {
+                    tag: key.to_string(),
+                    matcher
+                });
+            }
+        }
+
+        Ok(tags)
+    }
+}
+
+impl BaseConfig {
+    pub fn from_file(path: &Path) -> Result<BaseConfig> {
+        let data = fs::read_to_string(path)?;
+        let d = json::parse(data.as_str())?;
+
+        let tags = Config::read_tags(&d["tags"])?;
+        let ignore = WindowEventMatcher::from_json(&d["ignore"])?;
+        let anonymize = WindowEventMatcher::from_json(&d["anonymize"])?;
+
+        Ok(BaseConfig { tags, ignore, anonymize })
     }
 }

@@ -29,15 +29,18 @@ moonwatcher config.json
 
 ### JSON configuration
 
-The overall structure is as follows:
+The overall structure is as follows (relative paths are taken to start in the directory where the JSON config is located):
 
 - `"main"` (object)
   - `"output_dir"` (string)
-    - path to directory where event logs are stored (relative to directory where the JSON config file is located)
+    - path to directory where event logs are stored
   - `"sample_every_sec"` (number)
     - delay between sampling (seconds)
   - `"write_every_sec"` (number)
     - delay between writing samples to a file (seconds)
+  - `"path_to_base_config"` (string or null)
+    - path to another .json configuration file from which "ignore", "anonymize" and "tags" definitions will be read and added to definitions in this config file
+    - this is useful for sharing settings across different systems
 - `"ignore"` (object, array or null)
   - one or more `WindowEventMatcher` objects (see below)
   - events that match will not be recorded at all
@@ -65,9 +68,10 @@ Full configuration example:
 ```json
 {
   "main": {
-    "output_dir": ".",
+    "output_dir": "./logs",
     "sample_every_sec": 15,
-    "write_every_sec": 21600
+    "write_every_sec": 21600,
+    "path_to_base_config": null
   },
   "ignore": [{
     "window_title": "title to ignore"
