@@ -53,7 +53,7 @@ impl WindowEventMatcher {
             Some(Regex::new(tmp)?)
         } else { None };
 
-        if (![&window_title_regex, &process_path_regex].iter().any(|tmp| tmp.is_some())) {
+        if ![&window_title_regex, &process_path_regex].iter().any(|tmp| tmp.is_some()) {
             bail!("WindowEventMatcher must define at least one of window_title, process_path");
         }
 

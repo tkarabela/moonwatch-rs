@@ -1,9 +1,8 @@
 use std::collections::LinkedList;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::time::Duration;
 use chrono::{DateTime, Utc};
 use json;
-use json::{JsonValue, Null};
 use anyhow::Result;
 
 pub trait Window {
@@ -67,7 +66,7 @@ impl ActiveWindowEvent {
                 "hostname": self.hostname.as_str(),
                 "username": self.username.as_str(),
                 "idle_for": self.idle_for.as_secs_f32().round(),
-                "process_path": Null,
+                "process_path": json::Null,
                 "tags": tags,
             }
         } else {

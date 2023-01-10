@@ -1,7 +1,7 @@
 use std::process::{Command, Stdio};
 use std::time::Duration;
 use std::{fs, thread};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use crate::watcher::core::{Window, Desktop, MoonwatcherSignal};
 use anyhow::{bail, Result};
 use signal_hook::consts::{SIGHUP, TERM_SIGNALS};

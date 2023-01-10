@@ -7,10 +7,10 @@ use crate::watcher::core::Desktop;
 
 pub fn get_desktop(config: &Config) -> Result<Box<dyn core::Desktop>> {
     #[cfg(unix)]
-    fn get_desktop_impl(config: &Config) -> Result<Box<dyn core::Desktop>> {
+    fn get_desktop_impl(_config: &Config) -> Result<Box<dyn core::Desktop>> {
         // TODO support more UNIX platforms, possibly use config to request a particular impl.
         
-        let mut desktop = Box::new(platforms::linux::GnomeDesktop);
+        let desktop = Box::new(platforms::linux::GnomeDesktop);
         
         desktop.check_implementation_available()?;
         Ok(desktop)

@@ -1,17 +1,13 @@
 #![windows_subsystem = "windows"]
 
-use std::process::{Command, Stdio};
-use std::{fs, io, thread, time};
-use std::collections::LinkedList;
-use std::fs::File;
+use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 use std::time::Duration;
 use anyhow::bail;
-use chrono::{DateTime, Utc};
+use chrono;
 use moonwatch_rs::watcher;
 use moonwatch_rs::watcher::core::{ActiveWindowEvent, Desktop, MoonwatcherSignal};
-use regex::Regex;
 use moonwatch_rs::watcher::config::Config;
 use anyhow::Result;
 use sha1::{Sha1, Digest};
@@ -66,7 +62,7 @@ impl MoonwatcherWriter {
         let mut hasher = Sha1::new();
         hasher.update(whoami::hostname());
         hasher.update(whoami::username());
-        hasher.update(Utc::now().timestamp().to_le_bytes());
+        hasher.update(chrono::Utc::now().timestamp().to_le_bytes());
         hasher.update(b"moonwatcher");
         let hasher_result = hasher.finalize();
         let filename = format!("{:02x}.jsonl", hasher_result);
@@ -76,7 +72,7 @@ impl MoonwatcherWriter {
         // TODO consider allowing output encryption
 
         println!("Writing {} events to {:?}", self.events_to_write.len(), output_path);
-        let mut fp = File::create(output_path)?;
+        let mut fp = fs::File::create(output_path)?;
         while !self.events_to_write.is_empty() {
             let e = self.events_to_write.pop().unwrap();
             let line = e.to_json().dump();
@@ -118,7 +114,6 @@ fn main() -> anyhow::Result<()> {
                 match sig? {
                     MoonwatcherSignal::ReloadConfig => {
                         println!("Reloading configuration file");
-                        let new_config = Config::from_file(config_path.as_path());
                         match Config::from_file(config_path.as_path()) {
                             Ok(new_config) => {
                                 println!("Read configuration: {:?}", new_config);
@@ -152,7 +147,6 @@ fn main() -> anyhow::Result<()> {
                         println!("Terminating due to OS signal");
                         break;
                     }
-                    _ => bail!("unhandled MoonwatcherSignal")
                 }
             }
             recv(writer_tick_chan) -> _ => {
@@ -162,7 +156,7 @@ fn main() -> anyhow::Result<()> {
                     Err(e) => { println!("Error when writing data (will try later): {:?}", e) }
                 }
             }
-            recv(sample_tick_chan) -> tmp => {
+            recv(sample_tick_chan) -> _ => {
                 let res = get_window_event(desktop.as_ref(), config.sample_every); // this is not quite accurate w/ sample_tick_slow
                 match res {
                     Ok(ActiveWindowEventResult::DesktopLocked) => {
