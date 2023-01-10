@@ -7,11 +7,12 @@ use anyhow::{anyhow, bail, Result};
 use ctrlc;
 use windows::core::PWSTR;
 use windows::Win32::Foundation::HWND;
+use windows::Win32::System::Console::GetConsoleWindow;
 use windows::Win32::System::StationsAndDesktops::{GetThreadDesktop, SwitchDesktop};
 use windows::Win32::System::SystemInformation::GetTickCount;
 use windows::Win32::System::Threading::{GetCurrentThreadId, OpenProcess, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION, QueryFullProcessImageNameW};
 use windows::Win32::UI::Input::KeyboardAndMouse::{GetLastInputInfo, LASTINPUTINFO};
-use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowTextLengthW, GetWindowTextW, GetWindowThreadProcessId};
+use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowTextLengthW, GetWindowTextW, GetWindowThreadProcessId, ShowWindow, SW_HIDE};
 
 pub struct WindowsDesktop;
 pub struct WindowsWindow { window_handle: HWND }
@@ -63,6 +64,17 @@ impl Desktop for WindowsDesktop {
             let window_handle = GetForegroundWindow();
             Ok( Box::new(WindowsWindow { window_handle }) )
         }
+    }
+
+    fn before_main_loop_start(&self) -> Result<()> {
+        unsafe {
+            let console_handle = GetConsoleWindow();
+            if console_handle.0 == 0 {
+                bail!("GetConsoleWindow returned null handle");
+            }
+            ShowWindow(console_handle, SW_HIDE);
+        }
+        Ok(())
     }
 }
 

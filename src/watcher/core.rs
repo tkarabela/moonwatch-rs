@@ -20,6 +20,9 @@ pub trait Desktop {
     fn is_screen_locked(&self) -> bool;
     fn get_idle_duration(&self) -> Duration;
     fn get_active_window(&self) -> Result<Box<dyn Window>>;
+    fn before_main_loop_start(&self) -> Result<()> {
+        Ok(())
+    }
 }
 
 #[derive(Debug)]

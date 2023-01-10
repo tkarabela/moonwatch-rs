@@ -1,5 +1,3 @@
-#![windows_subsystem = "windows"]
-
 use std::process::{Command, Stdio};
 use std::{fs, io, thread, time};
 use std::collections::LinkedList;
@@ -101,6 +99,7 @@ fn main() -> anyhow::Result<()> {
 
     let mut desktop = watcher::get_desktop(&config)?;
     println!("Using desktop implementation: {}", desktop.implementation_name());
+    desktop.before_main_loop_start()?;
 
     let mut writer = MoonwatcherWriter::new();
 
