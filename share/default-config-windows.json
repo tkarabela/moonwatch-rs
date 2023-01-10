@@ -2,7 +2,7 @@
   "main": {
     "output_dir": "./log",
     "sample_every_sec": 15,
-    "write_every_sec": 21600
+    "write_every_sec": 1200
   },
   "ignore": [{
     "process_path": "Microsoft\\.LockApp|Windows\\\\explorer.exe"

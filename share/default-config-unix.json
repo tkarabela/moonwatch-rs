@@ -1,0 +1,28 @@
+{
+  "main": {
+    "output_dir": "./log",
+    "sample_every_sec": 15,
+    "write_every_sec": 21600
+  },
+  "ignore": [],
+  "anonymize": [{
+    "window_title": "title to anonymize"
+  }],
+  "tags": {
+    "youtube": [{
+        "window_title": "YouTube — Mozilla Firefox$",
+        "process_path": "firefox(\\.exe)?$"
+      },
+      {
+        "window_title": "YouTube — Mozilla Firefox$",
+        "process_path": "chrome(\\.exe)?$"
+      }
+    ],
+    "pycharm": {
+      "process_path": "JetBrains/Toolbox/apps/PyCharm"
+    },
+    "clion": {
+      "process_path": "JetBrains/Toolbox/apps/CLion"
+    }
+  }
+}
