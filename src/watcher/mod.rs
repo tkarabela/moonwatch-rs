@@ -17,7 +17,7 @@ pub fn get_desktop(config: &Config) -> Result<Box<dyn core::Desktop>> {
     }
 
     #[cfg(windows)]
-    fn get_desktop_impl(config: &Config) -> Result<Box<dyn core::Desktop>> {
+    fn get_desktop_impl(_config: &Config) -> Result<Box<dyn core::Desktop>> {
         let desktop = Box::new(platforms::windows::WindowsDesktop);
         desktop.check_implementation_available()?;
         Ok(desktop)

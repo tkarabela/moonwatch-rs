@@ -1,9 +1,8 @@
 use std::time::Duration;
-use std::{fs, thread};
 use std::mem::size_of;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use crate::watcher::core::{Window, Desktop, MoonwatcherSignal};
-use anyhow::{anyhow, bail, Result};
+use anyhow::{bail, Result};
 use ctrlc;
 use windows::core::PWSTR;
 use windows::Win32::Foundation::HWND;
