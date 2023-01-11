@@ -1,25 +1,41 @@
 # Moonwatch.rs
 
+🚧 _This is an early development version of the software._ 🚧
+
+Moonwatch.rs is a privacy-focused digital wellbeing app. Get insights into how you
+spend your screen time – you choose what data is tracked and where it is stored.
+
+You can run Moonwatch.rs completely self-hosted on your desktop or laptop;
+aggregating data from multiple machines is also possible via a network drive or
+any of the "Shared Folder" cloud services (eg. Dropbox, OneDrive, MEGA, etc.).
+
+_Currently, Moonwatch.rs consists only of the `moonwatcher` daemon, which is a 
+background service recording active window at regular intervals and logging it
+into `.jsonl` files. More features including analytics and GUI are planned._
+
 ## The `moonwatcher` daemon
+
+### Supported platforms
+
+- Linux (and other unix-like systems), GNOME, X11
+  - dependencies: `gnome-screensaver-command`, `xprintidle`, `xdotool`
+  - tested on Ubuntu 22.04 LTS
+- Windows
+  - no dependencies
+  - tested on Windows 10 22H2
 
 ### Installation
 
 Tested on Ubuntu 22.04 LTS.
 
 - Clone the repository.
-- `./build.py && ./build/install_unix.py`
+- `./build_linux.py && ./build/moonwatch-rs_0.1.0_Linux-x86-64/install_unix.py`
 - This will install into `~/.moonwatcher-rs`.
   - It sets up a Systemd user service `moonwatcher-rs` that starts `moonwatcher` on startup.
   - Events are written to `~/.moonwatcher-rs/logs`
   - To customize, edit `~/.moonwatcher-rs/config.json`
   - To check up on the daemon, run `systemctl --user status moonwatch-rs`
   - To reload config, run `systemctl --user reload moonwatch-rs`
-
-Supported platforms:
-
-- Linux (and other unix-like systems), GNOME, X11
-  - dependencies: `gnome-screensaver-command`, `xprintidle`, `xdotool`
-  - tested on Ubuntu 22.04 LTS
 
 ### CLI
 
