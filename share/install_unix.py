@@ -7,6 +7,10 @@ import subprocess
 build_dir = op.abspath(op.dirname(__file__))
 install_dir = op.expanduser("~/.moonwatch-rs")
 
+print("Stopping moonwatch-rs service")
+rv = subprocess.call(["systemctl", "--user", "stop", "moonwatch-rs"])
+print("systemctl returned code", rv)
+
 print("Installing into", install_dir)
 shutil.copy(op.join(build_dir, "moonwatcher"), install_dir)
 if op.exists(op.join(install_dir, "config.json")):
@@ -21,5 +25,9 @@ os.makedirs(systemd_user_dir, exist_ok=True)
 shutil.copy(op.join(build_dir, "moonwatch-rs.service"), systemd_user_dir)
 
 cmd = ["systemctl", "--user", "enable", "moonwatch-rs"]
-print("Installing moonwatch-rs service:", cmd)
+print("Enabling moonwatch-rs service:", cmd)
 subprocess.check_call(cmd)
+
+print("Starting moonwatch-rs service")
+rv = subprocess.call(["systemctl", "--user", "start", "moonwatch-rs"])
+print("systemctl returned code", rv)
