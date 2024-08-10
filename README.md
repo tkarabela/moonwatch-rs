@@ -19,15 +19,16 @@ into `.jsonl` files. More features including analytics and GUI are planned._
 
 - Linux (and other unix-like systems), GNOME, X11
   - dependencies: `gnome-screensaver-command`, `xprintidle`, `xdotool`
-  - tested on Ubuntu 22.04 LTS
+  - tested on Ubuntu 22.04 LTS, Ubuntu 24.04 LTS
 - Windows
   - no dependencies
-  - tested on Windows 10 22H2
+  - tested on Windows 10 22H2, Windows 11
 
 ### Installation
 
-Tested on Ubuntu 22.04 LTS.
+Tested on Ubuntu 24.04 LTS.
 
+- `sudo apt install gnome-screensaver xprintidle xdotool`
 - Clone the repository.
 - `./build_linux.py && ./build/moonwatch-rs_0.1.0_Linux-x86-64/install_unix.py`
 - This will install into `~/.moonwatcher-rs`.
