@@ -4,6 +4,12 @@ Build x86_64-pc-windows-gnu using Cross.
 
 This is for cross-compiling from Linux to Windows.
 
+Prerequisites:
+
+    sudo apt install zip  # and docker or podman
+    cargo install cross --git https://github.com/cross-rs/cross
+    cargo update
+
 """
 
 import os.path as op
